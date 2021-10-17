@@ -58,7 +58,7 @@ Additionally, the data includes many entries where the msPlayed is extremely sma
 Delete From ListeningHistory Where msPlayed <10000
 ```
 
-What is now left is the data I wish to use in my analysis. The first three questions I had can easily be answered using basic SQL quereies.
+What is now left is the data I wish to use in my analysis. The first three questions I had can easily be answered using basic SQL queries.
 
 To find out how many different artists and tracks I listened to and how long I listened per play on average (in seconds) we can run the following query.
 ```sql
@@ -97,10 +97,9 @@ top_artists <- sqlQuery(con,
 From listeninghistory 
 Group by artistName 
 Order by Total desc; ")
-barplot(top_artists[,2], names.arg = top_artists[,1], cex.names = .5, ylab = 'Plays', xlab = 'Artist', las = TRUE, ylim = c(0,1500))
 ```
 
-To start I took the names of the top 10 artists from the SQL query and converted them into a vector so that I can use in a future for loop. Next I created an empty data frame that was 10 columns by 366 rows. The columns represent each of the top 10 artists and the columns are for the days. I added a prior day of all 0s as a baseline start for my for loop since the cumulative calculations counts the plays for a given day and adds them to the previous day. So for day 1 we total the number of plays for each of the top ten artists and add them to 0 (since this is the beginning of the cumulative calculation) then for day 2 it does the same but adds the day 1 value and so on through the end of the year. This for loop is shown below.
+To start I took the names of the top 10 artists from the SQL query and converted them into a vector that I can use in a future for loop. Next I created an empty data frame that was 10 columns by 366 rows. The columns represent each of the top 10 artists and the columns are for the days. I added a prior day of all 0s as a baseline start for my for loop since the cumulative calculations counts the plays for a given day and adds them to the previous day. So for day 1 we total the number of plays for each of the top ten artists and add them to 0 (since this is the beginning of the cumulative calculation) then for day 2 it does the same but adds the day 1 value and so on through the end of the year. This for loop is shown below.
 
 ```r
 top_artists <- top_artists[,-2]
@@ -169,5 +168,5 @@ Our findings show us that when looking at top artists the results can, and in my
 
 ---
 ## Future Analysis Directions
-In the future it would be interesting to perform web scraping to gather the genre classification for each track and perform a genre analysis of the sort that is normally included in Spotify’s Wrapped. Additionally, I discovered at one point in my data that a 4.5 minute song was had an entry where the msPlayed corresponded to over 10 minutes. Upon further digging I concluded that when the progress slider on the Spotify app is slid backwards in the direction of, but not all the way to, the start of the track the entry is not ended but continued and all subsequent time is added to the pre slide time resulting in some listens that are longer than the track length. If track length data were included it would be interesting to calculate and count plays by non-integer amounts (msPlayed/track length) and recreate the ‘by total plays’ analysis performed earlier. 
+In the future it would be interesting to perform web scraping to gather the genre classification for each track and perform a genre analysis of the sort that is normally included in Spotify’s Wrapped. Additionally, I discovered at one point in my data that a 4.5 minute song had an entry where the msPlayed corresponded to over 10 minutes. Upon further digging I concluded that when the progress slider on the Spotify app is slid backwards in the direction of, but not all the way to, the start of the track the entry is not ended but continued and all subsequent time is added to the pre slide time resulting in some listens that are longer than the track length. If track length data were included it would be interesting to calculate and count plays by non-integer amounts (msPlayed/track length) and recreate the ‘by total plays’ analysis performed earlier. 
 
