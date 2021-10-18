@@ -70,7 +70,7 @@ The results from this query are that I listened to `1125` unique artists, `5088`
 
 ---
 ## Establishing RODBC Connection between R and SQL
-For the remaining more complex aspects of my analysis I wished to use R instead of SQL so it was necessary to import my data into R. The way I decided to do this was use the RODBC package in R to connect to my SQL database. The benefits of this method are ease and speed. Establishing a connection is rather simple and going forward it is possible to use the SQLQuery() function to write SQL queries in R and assign the output directly to R objects all without ever leaving RStudio. The code below shows how this is performed.
+For the remaining more complex aspects of my analysis I wished to use R instead of SQL so it was necessary to import my data into R. The way I decided to do this was use the RODBC package in R to connect to my SQL database. The benefits of this method are ease and speed. Establishing a connection is rather simple and going forward it is possible to use the `SQLQuery()` function to write SQL queries in R and assign the output directly to R objects all without ever leaving RStudio. The code below shows how this is performed.
 
 ```r
 library(RODBC)
