@@ -12,12 +12,12 @@ A benefit of using the haversine to compute distance on a sphere, in particular 
 
 ---
 
-## Data Aquisition
-To aquire the data the all one needs to do is go to `https://www.denvergov.org/opendata/dataset/city-and-county-of-denver-crime` and at the bottom of the page there are a handful of options for different file types. These include shape and esri geodata files that can be imported directly into software such as QGIS. I will QGIS later but for now I downloaded the csv file type and imported this into SQL. For information on how to do this check out my previous post on Spotify data analysis where I go in depth on this process. Once the data is in SQL we can inspect the data, which shows that there are `517638` rows and `19` columns. To add some focus to this project I decided to focus on crime with an `OFFENSE_CATEGORY_ID` of `Arson`. This is to cut down on the computation time as clustering methods can be quite time intensive when there are many points and I had just seen a movie about arson which motivated me to pick that crime in particular.
+## Data Acquisition
+To acquire the data the all one needs to do is go to `https://www.denvergov.org/opendata/dataset/city-and-county-of-denver-crime` and at the bottom of the page there are a handful of options for different file types. These include shape and esri geodata files that can be imported directly into software such as QGIS. I will QGIS later but for now I downloaded the csv file type and imported this into SQL. For information on how to do this check out my previous post on Spotify data analysis where I go in depth on this process. Once the data is in SQL we can inspect the data, which shows that there are `517638` rows and `19` columns. To add some focus to this project I decided to focus on crime with an `OFFENSE_CATEGORY_ID` of `Arson`. This is to cut down on the computation time as clustering methods can be quite time intensive when there are many points and I had just seen a movie about arson which motivated me to pick that crime in particular.
 
 ![Screenshot (84)](https://user-images.githubusercontent.com/92491074/139138213-01b623aa-3e24-4010-badd-b6dd5983fb26.png)
 
-The next step is to connect Python, which I will be using to perform the different clustering methods, to SQl so we can query data from SQL directly in Python and assign the output to objects in Python. In my last post I did the same thing in R instead of Python using `RODBC` and this time I will do something very similar using `PYODBC`, the equivalent Python package. After installing and importing the PYODBC package I can execute the following code to connect to SQL and run a query for our data.
+The next step is to connect Python, which I will be using to perform the different clustering methods, to SQL so we can query data from SQL directly in Python and assign the output to objects in Python. In my last post I did the same thing in R instead of Python using `RODBC` and this time I will do something very similar using `PYODBC`, the equivalent Python package. After installing and importing the PYODBC package I can execute the following code to connect to SQL and run a query for our data.
 
 ```python
 # Establishing Connection To SQL Server For Data Queries
@@ -41,7 +41,7 @@ As you can see I queried all columns initially before later creating a coordinat
 ---
 
 ## KMeans Clustering Method
-To implement the KMeans Clustering Method in Python I will be using the Scikit-Learn library which is a machine learning library for Python that includes many clustering methods including both KMeans and DBSCAN. Additionally, it is built on both Numpy and Matplotlib, which I will be using as well. The KMeans algorithm clusters all given points, which in our data is `719`. This means that we need to identify the optimal number of cluster for the algorithm to use to assign all the coordinates we have. A common way to do this is using the Elbow Method which calculates the within-cluster sum of squares (WCSS) for various numbers of clusters (K) and plots them. When we look at the resulting plot the spot where the slope rapidly changes to approach horizonal is the optimal K (number of clusters). As we can see from the code and plot, included below, the optimal K is 4 and so that is the number of clusters we will specify for in our KMeans algorithm.
+To implement the KMeans Clustering Method in Python I will be using the Scikit-Learn library which is a machine learning library for Python that includes many clustering methods including both KMeans and DBSCAN. Additionally, it is built on both Numpy and Matplotlib, which I will be using as well. The KMeans algorithm clusters all given points, which in our data is `719`. This means that we need to identify the optimal number of cluster for the algorithm to use to assign all the coordinates we have. A common way to do this is using the Elbow Method which calculates the within-cluster sum of squares (WCSS) for various numbers of clusters (K) and plots them. When we look at the resulting plot the spot where the slope rapidly changes to approach horizontal is the optimal K (number of clusters). As we can see from the code and plot, included below, the optimal K is 4 and so that is the number of clusters we will specify for in our KMeans algorithm.
 
 ```python
 # Running The Elbow Method for Determining Ideal Number of Clusters
@@ -63,7 +63,7 @@ plt.show()
 
 ![Elbow Plot](https://user-images.githubusercontent.com/92491074/139121765-b6c6ad83-9d44-4d44-b1b5-7730ed2a76ff.png)
 
-In the code above you can see the initialization choice was set to `random` instead of the default `k-means ++`. This is because the default is meant to decrease convergence time but since our data is on the smaller side (cutting down from over 500,000 crimes to under 1,0000 at the outset) there is little need for this and we can try random initialization. Additionally the algorithm was set to `full` as this is the traditional Expectation-Maximization style KMeans algorithm according to the documentation. The other algorithm option was `elkan` which is more efficient for data with well defined clusters and as we will see later after running DBSCAN our data has a considerable amount of noise.
+In the code above you can see the initialization choice was set to `random` instead of the default `k-means ++`. This is because the default is meant to decrease convergence time but since our data is on the smaller side (cutting down from over 500,000 crimes to under 1,000 at the outset) there is little need for this and we can try random initialization. Additionally the algorithm was set to `full` as this is the traditional Expectation-Maximization style KMeans algorithm according to the documentation. The other algorithm option was `elkan` which is more efficient for data with well-defined clusters and as we will see later after running DBSCAN our data has a considerable amount of noise.
 
 Now if we re-run our KMeans algorithm with the optimal settings we found above we can our resulting clusters and centroids. The code for the algorithm is shown below. You may notice that our first column is Latitude and our second column is Longitude which we have to assign in reverse order for plotting. This is because later using haversine distance it requires Latitude first before Longitude in our coordinates object and if we didn't take the time to explicitly assign x as longitude and y as latitude in our plot we would end up with backwards axes. Additionally, after plotting the KMeans model I export the results to Excel. This is for our use of QGIS later which I will touch on after addressing DBSCAN.
 
@@ -91,7 +91,7 @@ cluster_centroids.to_excel(r'C:\Users\Mitchell\Desktop\export_centroids.xlsx', i
 
 ![KMeans Clustering](https://user-images.githubusercontent.com/92491074/139124515-970b820c-a8dc-4160-ad0b-bf45781dd992.png)
 
-As we can see from the plot our 4 centroids are marked in red within each cluster. Additionally, as expected from KMeans every point is assigned to one of our four clusters. Next we will look at the other most famous clustering method in unsupervise machine learning, DBSCAN, to see how the clustering results change. The key differences between the two methods are that DBSCAN takes two crucial inputs, radius and minimum number of points, while KMeans only uses number of clusters. Further, DBSCAN is effective at detecting outliers and handling noisy data as it can detect high density clusters that are separated by areas of low density while KMeans is not capable of detecting outliers or noise and will assign those points to a cluster as it would any other points. Finally, KMeans uses Euclidean distance whereas DBSCAN can be assigned to use various distance calculation methods but in our case we will be using haversine.
+As we can see from the plot our 4 centroids are marked in red within each cluster. Additionally, as expected from KMeans every point is assigned to one of our four clusters. Next we will look at the other most famous clustering method in unsupervised machine learning, DBSCAN, to see how the clustering results change. The key differences between the two methods are that DBSCAN takes two crucial inputs, radius and minimum number of points, while KMeans only uses number of clusters. Further, DBSCAN is effective at detecting outliers and handling noisy data as it can detect high density clusters that are separated by areas of low density while KMeans is not capable of detecting outliers or noise and will assign those points to a cluster as it would any other points. Finally, KMeans uses Euclidean distance whereas DBSCAN can be assigned to use various distance calculation methods but in our case we will be using haversine.
 
 ---
 
@@ -158,13 +158,29 @@ noise.to_excel(r'C:\Users\Mitchell\Desktop\export_noise.xlsx', index=False, head
 
 ![DBSCAN noise](https://user-images.githubusercontent.com/92491074/139137712-f7a916af-74e2-4a26-94ce-802cd975ff82.png)
 
-The code above includes more than just running the DBSCAN model. I exported some of my objects to Excel files in order to create visual layers in QGIS that are overlayed on a map of Denver. To create the separate layers I did some filtering of the data using for loops to remove coordinates based on their corresponding DBSCAN labels to get just the clusters and also data that was just noise. This way they can be uploaded as separate layers and toggled on and off at will on the QGIS overlay.
+The code above includes more than just running the DBSCAN model. I exported some of my objects to Excel files in order to create visual layers in QGIS that are overlaid on a map of Denver. To create the separate layers I did some filtering of the data using for loops to remove coordinates based on their corresponding DBSCAN labels to get just the clusters and also data that was just noise. This way they can be uploaded as separate layers and toggled on and off at will on the QGIS overlay.
 
 ---
 ## QGIS Representation of KMeans and DBSCAN Methods 
 
-QGIS is a free open-source cross-platform desktop geographic information system application that supports viewing, editing and analysis of geospatial data such as our coordinate data. 
+QGIS is a free open-source cross-platform desktop geographic information system application that supports viewing, editing and analysis of geospatial data such as our coordinate data. This allows us to upload our data to an actual map of Denver and see how it looks as well as toggle off and on different layers of our data for each model. To do this we need to have our data in CSV file format. Our data has already been exported to XLSX previously so all we have to do is resave the files as CSV. Then we can open QGIS and go to the `Layer` tab, then `Add Layer`. From here we have multiple options for adding layers and we want to select `Add Delimited Text Layer`. From here a menu, show below, opens up where we can select our file from our computer and in my case it will automatically read our data and assign the Longitude column to our x-axis and Latitude to our y-axis as well as plot all of our points. I repeated this step for each of our 4 layers (2 for each model). Then for the two layers that involve multiple clusters (KMeans clusters and DBSCAN clusters) we go to that layer's properties menu. From here under the `Symbology` tab we can select the pulldown menu that is default set to Single Symbol and change this to Categorized and select the Labels column from our data as the value from which to determine categories. Then press Execute followed by Apply to distinguish the clusters. 
+
+![Screenshot (104)](https://user-images.githubusercontent.com/92491074/139150301-fb13c8de-8dad-4f0a-8a4b-42680cdb3543.png)
+
+Now we can toggle different layer combinations to see our model results in QGIS. To get a map background you can install and use the plugin `Quick Map Services` from the Plugins menu and then in my case I went with the OSM Standard map which is a world map. This will slow down the application so it is probably better in the future to pick a map that contains just the area your points cover. Below are the different maps I was able to generate using the model results.
+
+### KMeans Model
+![Screenshot (89)](https://user-images.githubusercontent.com/92491074/139150042-872f4fac-2200-454c-9984-636f252bdc57.png)
 
 
+### DBSCAN Model
+![Screenshot (90)](https://user-images.githubusercontent.com/92491074/139150066-97155311-6973-4ba2-9ef9-488764edc3c7.png)
 
+
+### DBSCAN Clusters
+![Screenshot (91)](https://user-images.githubusercontent.com/92491074/139150089-8b4d0050-b065-41a9-b05e-950d222f05d8.png)
+
+
+### DBSCAN Noise
+![Screenshot (92)](https://user-images.githubusercontent.com/92491074/139150106-0992f33b-cbe2-4ce5-9a61-bc423a308309.png)
 
