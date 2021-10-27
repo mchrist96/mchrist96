@@ -1,4 +1,4 @@
-# Denver Arson Attack Clustering
+# Denver Arson Clustering
 ## Intro
 I was recently informed that the city of Denver has a data analytics department that published a comprehensive data set of all crimes that have been reported in Denver over the past 5 years. I thought that this would provide an interesting opportunity to work with geospatial data in the form of coordinates (longitude and latitude) that are included for each crime entry. There are many clustering methods in existence, one of the most common is KMeans clustering which uses the square of Euclidean distance d(p,q) shown below.
 
