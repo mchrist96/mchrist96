@@ -184,3 +184,7 @@ Now we can toggle different layer combinations to see our model results in QGIS.
 ### DBSCAN Noise
 ![Screenshot (92)](https://user-images.githubusercontent.com/92491074/139150106-0992f33b-cbe2-4ce5-9a61-bc423a308309.png)
 
+---
+
+## Conclusion
+From the above DBSCAN Clusters plot we can see that many of the clusters fall into specific Denver neighborhoods. For instance East Colfax, Montbello, Cory-Merrill, and Rocky Mountain Lake Park each contain a cluster. Additionally the Greater Downtown Denver area contains the largest cluster DBSCAN found likely due to being the highest density area of Denver. The traditional inference to make from crime data clustering would be that the areas with clusters are places of higher crime rates and thus more patrols should be assigned to these areas. However, studies have shown that this is a self-fulfilling prophecy as when more patrols are assigned to areas the crime rate increases due to a higher police presence being present to report to and respond to crime. Thus increasing the numbers further. Seeing as I am not a criminal analytics professional I will refrain from inferring what this means from a law enforcement perspective. I mainly embarked on this project to get hands on experience applying different unsupervised machine learning techniques to the same problem in order to get exposure to the difference in results and the pros and cons of both techniques, KMeans and DBSCAN, as well as highlight the different geospatial distance calculation techniques available to data analytics professionals.
